@@ -135,7 +135,7 @@
       <button class="btn-back" onclick="showView('liste')">←</button>
       <div class="detail-avatar" id="d-avatar"></div>
       <div><div class="detail-nom" id="d-nom"></div><div class="detail-id" id="d-id"></div></div>
-      <div style="margin-left:auto;"><span id="d-statut-badge"></span></div>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center;"><span id="d-statut-badge"></span><button onclick="supprimerClient()" style="background:#fee2e2;color:#991b1b;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-size:0.85rem;font-weight:600;">🗑️ Supprimer</button></div>
     </div>
     <div class="detail-grid">
       <div class="detail-card">
@@ -348,6 +348,17 @@ async function ajouterClient() {
   document.getElementById('f-pays').value='France';
   await chargerClients();
   toast('Client ajouté avec succès !');
+}
+
+async function supprimerClient() {
+  const id = document.getElementById('d-id').textContent;
+  const nom = document.getElementById('d-nom').textContent;
+  if (!confirm('Supprimer définitivement ' + nom + ' ?')) return;
+  const { error } = await db.from('clients').delete().eq('id', id);
+  if (error) { alert('Erreur : ' + error.message); return; }
+  showView('liste');
+  await chargerClients();
+  toast('Client supprimé.');
 }
 
 function toast(msg) {
