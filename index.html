@@ -233,6 +233,40 @@ tr:hover td{background:#fafaf7;cursor:pointer}
     </div>
   </div>
 </div>
+<div class="overlay" id="overlay-export" onclick="fermerOverlay('overlay-export',event)">
+  <div class="modale">
+    <h2>📥 Choisir les colonnes à exporter</h2>
+    <p style="font-size:.85rem;color:#666;margin-bottom:16px">Cochez les informations que vous voulez dans le fichier Excel :</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+      <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer"><input type="checkbox" id="ex-id" checked> ID Client</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer"><input type="checkbox" id="ex-nom" checked> Nom</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer"><input type="checkbox" id="ex-prenom" checked> Prénom</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer"><input type="checkbox" id="ex-email" checked> Email</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer"><input type="checkbox" id="ex-tel"> Téléphone</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer"><input type="checkbox" id="ex-adresse"> Adresse</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer"><input type="checkbox" id="ex-cp"> Code postal</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer"><input type="checkbox" id="ex-ville"> Ville</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer"><input type="checkbox" id="ex-pays"> Pays</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer"><input type="checkbox" id="ex-type"> Type de client</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer"><input type="checkbox" id="ex-prestation"> Prestation</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer"><input type="checkbox" id="ex-premiere"> 1ère visite</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer"><input type="checkbox" id="ex-derniere"> Dernière visite</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer"><input type="checkbox" id="ex-nb"> Nb séjours</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer"><input type="checkbox" id="ex-newsletter"> Newsletter</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer"><input type="checkbox" id="ex-source"> Source</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer"><input type="checkbox" id="ex-statut"> Statut</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer"><input type="checkbox" id="ex-commentaire"> Commentaire</label>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button onclick="toutCocher(true)" style="background:#e8f0e8;color:#2d6a2d;border:none;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:.82rem">✅ Tout sélectionner</button>
+      <button onclick="toutCocher(false)" style="background:#f0f0f0;border:none;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:.82rem">☐ Tout décocher</button>
+    </div>
+    <div class="modale-actions">
+      <button class="btn-annuler" onclick="document.getElementById('overlay-export').classList.remove('open')">Annuler</button>
+      <button class="btn-sauver" onclick="lancerExport()">📥 Télécharger Excel</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div><script>
 const SUPABASE_URL='https://fsvumpcrdhbldyofhvyx.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzdnVtcGNyZGhibGR5b2Zodnl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MTY4OTcsImV4cCI6MjA5NjQ5Mjg5N30.yTm0oPJMJ74w0jRupqBzS7RvLP80w2F_sZgpw-vx1SQ';
@@ -356,6 +390,37 @@ async function sauverClient(){
   else{const nId='CDT-'+String(nextNum).padStart(3,'0');data.id=nId;data.premiere=new Date().toLocaleDateString('fr-FR');data.derniere=new Date().toLocaleDateString('fr-FR');data.nb_sejours=0;const{error}=await db.from('clients').insert([data]);if(error){alert('Erreur: '+error.message);return;}nextNum++;toast('Client ajouté !');}
   document.getElementById('overlay-client').classList.remove('open');
   await function exporterExcel() {
+  document.getElementById('overlay-export').classList.add('open');
+}
+function toutCocher(val) {
+  ['id','nom','prenom','email','tel','adresse','cp','ville','pays','type','prestation','premiere','derniere','nb','newsletter','source','statut','commentaire'].forEach(k => {
+    document.getElementById('ex-'+k).checked = val;
+  });
+}
+function lancerExport() {
+  const colonnes = [
+    {id:'ex-id', label:'ID', key:'id'},
+    {id:'ex-nom', label:'Nom', key:'nom'},
+    {id:'ex-prenom', label:'Prénom', key:'prenom'},
+    {id:'ex-email', label:'Email', key:'email'},
+    {id:'ex-tel', label:'Téléphone', key:'tel'},
+    {id:'ex-adresse', label:'Adresse', key:'adresse'},
+    {id:'ex-cp', label:'Code postal', key:'cp'},
+    {id:'ex-ville', label:'Ville', key:'ville'},
+    {id:'ex-pays', label:'Pays', key:'pays'},
+    {id:'ex-type', label:'Type', key:'type'},
+    {id:'ex-prestation', label:'Prestation', key:'prestation'},
+    {id:'ex-premiere', label:'1ère visite', key:'premiere'},
+    {id:'ex-derniere', label:'Dernière visite', key:'derniere'},
+    {id:'ex-nb', label:'Nb séjours', key:'nb_sejours'},
+    {id:'ex-newsletter', label:'Newsletter', key:'newsletter'},
+    {id:'ex-source', label:'Source', key:'source'},
+    {id:'ex-statut', label:'Statut', key:'statut'},
+    {id:'ex-commentaire', label:'Commentaire', key:'commentaire'}
+  ].filter(c => document.getElementById(c.id).checked);
+
+  if (colonnes.length === 0) { alert('Sélectionnez au moins une colonne.'); return; }
+
   const q = document.getElementById('search').value.toLowerCase();
   const type = document.getElementById('filtre-type').value;
   const statut = document.getElementById('filtre-statut').value;
@@ -364,13 +429,10 @@ async function sauverClient(){
     return (!q||txt.includes(q))&&(!type||c.type===type)&&(!statut||c.statut===statut);
   });
 
-  const entetes = ['ID','Nom','Prénom','Email','Téléphone','Adresse','Code postal','Ville','Pays','Type','Prestation','1ère visite','Dernière visite','Nb séjours','Commentaire','Newsletter','Source','Statut'];
-  const lignes = liste.map(c => [c.id,c.nom,c.prenom,c.email,c.tel,c.adresse,c.cp,c.ville,c.pays,c.type,c.prestation,c.premiere,c.derniere,c.nb_sejours,c.commentaire,c.newsletter,c.source,c.statut]);
-
-  let csv = '﻿'; // BOM pour Excel
-  csv += entetes.join(';') + '\n';
-  lignes.forEach(l => {
-    csv += l.map(v => '"'+(v||'').toString().replace(/"/g,'""')+'"').join(';') + '\n';
+  let csv = '﻿';
+  csv += colonnes.map(c => c.label).join(';') + '\n';
+  liste.forEach(client => {
+    csv += colonnes.map(c => '"'+(client[c.key]||'').toString().replace(/"/g,'""')+'"').join(';') + '\n';
   });
 
   const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
@@ -381,6 +443,7 @@ async function sauverClient(){
   a.download = 'clients-chemins-de-traverse-'+date+'.csv';
   a.click();
   URL.revokeObjectURL(url);
+  document.getElementById('overlay-export').classList.remove('open');
   toast('Export téléchargé !');
 }
 
@@ -408,6 +471,37 @@ async function supprimerClient(){
   await db.from('reservations').delete().eq('client_id',id);
   const{error}=await db.from('clients').delete().eq('id',id);if(error){alert('Erreur: '+error.message);return;}
   showView('liste');await function exporterExcel() {
+  document.getElementById('overlay-export').classList.add('open');
+}
+function toutCocher(val) {
+  ['id','nom','prenom','email','tel','adresse','cp','ville','pays','type','prestation','premiere','derniere','nb','newsletter','source','statut','commentaire'].forEach(k => {
+    document.getElementById('ex-'+k).checked = val;
+  });
+}
+function lancerExport() {
+  const colonnes = [
+    {id:'ex-id', label:'ID', key:'id'},
+    {id:'ex-nom', label:'Nom', key:'nom'},
+    {id:'ex-prenom', label:'Prénom', key:'prenom'},
+    {id:'ex-email', label:'Email', key:'email'},
+    {id:'ex-tel', label:'Téléphone', key:'tel'},
+    {id:'ex-adresse', label:'Adresse', key:'adresse'},
+    {id:'ex-cp', label:'Code postal', key:'cp'},
+    {id:'ex-ville', label:'Ville', key:'ville'},
+    {id:'ex-pays', label:'Pays', key:'pays'},
+    {id:'ex-type', label:'Type', key:'type'},
+    {id:'ex-prestation', label:'Prestation', key:'prestation'},
+    {id:'ex-premiere', label:'1ère visite', key:'premiere'},
+    {id:'ex-derniere', label:'Dernière visite', key:'derniere'},
+    {id:'ex-nb', label:'Nb séjours', key:'nb_sejours'},
+    {id:'ex-newsletter', label:'Newsletter', key:'newsletter'},
+    {id:'ex-source', label:'Source', key:'source'},
+    {id:'ex-statut', label:'Statut', key:'statut'},
+    {id:'ex-commentaire', label:'Commentaire', key:'commentaire'}
+  ].filter(c => document.getElementById(c.id).checked);
+
+  if (colonnes.length === 0) { alert('Sélectionnez au moins une colonne.'); return; }
+
   const q = document.getElementById('search').value.toLowerCase();
   const type = document.getElementById('filtre-type').value;
   const statut = document.getElementById('filtre-statut').value;
@@ -416,13 +510,10 @@ async function supprimerClient(){
     return (!q||txt.includes(q))&&(!type||c.type===type)&&(!statut||c.statut===statut);
   });
 
-  const entetes = ['ID','Nom','Prénom','Email','Téléphone','Adresse','Code postal','Ville','Pays','Type','Prestation','1ère visite','Dernière visite','Nb séjours','Commentaire','Newsletter','Source','Statut'];
-  const lignes = liste.map(c => [c.id,c.nom,c.prenom,c.email,c.tel,c.adresse,c.cp,c.ville,c.pays,c.type,c.prestation,c.premiere,c.derniere,c.nb_sejours,c.commentaire,c.newsletter,c.source,c.statut]);
-
-  let csv = '﻿'; // BOM pour Excel
-  csv += entetes.join(';') + '\n';
-  lignes.forEach(l => {
-    csv += l.map(v => '"'+(v||'').toString().replace(/"/g,'""')+'"').join(';') + '\n';
+  let csv = '﻿';
+  csv += colonnes.map(c => c.label).join(';') + '\n';
+  liste.forEach(client => {
+    csv += colonnes.map(c => '"'+(client[c.key]||'').toString().replace(/"/g,'""')+'"').join(';') + '\n';
   });
 
   const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
@@ -433,6 +524,7 @@ async function supprimerClient(){
   a.download = 'clients-chemins-de-traverse-'+date+'.csv';
   a.click();
   URL.revokeObjectURL(url);
+  document.getElementById('overlay-export').classList.remove('open');
   toast('Export téléchargé !');
 }
 
@@ -441,6 +533,37 @@ init();toast('Client supprimé.');
 function fermerOverlay(id,e){if(e.target===document.getElementById(id))document.getElementById(id).classList.remove('open');}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
 function exporterExcel() {
+  document.getElementById('overlay-export').classList.add('open');
+}
+function toutCocher(val) {
+  ['id','nom','prenom','email','tel','adresse','cp','ville','pays','type','prestation','premiere','derniere','nb','newsletter','source','statut','commentaire'].forEach(k => {
+    document.getElementById('ex-'+k).checked = val;
+  });
+}
+function lancerExport() {
+  const colonnes = [
+    {id:'ex-id', label:'ID', key:'id'},
+    {id:'ex-nom', label:'Nom', key:'nom'},
+    {id:'ex-prenom', label:'Prénom', key:'prenom'},
+    {id:'ex-email', label:'Email', key:'email'},
+    {id:'ex-tel', label:'Téléphone', key:'tel'},
+    {id:'ex-adresse', label:'Adresse', key:'adresse'},
+    {id:'ex-cp', label:'Code postal', key:'cp'},
+    {id:'ex-ville', label:'Ville', key:'ville'},
+    {id:'ex-pays', label:'Pays', key:'pays'},
+    {id:'ex-type', label:'Type', key:'type'},
+    {id:'ex-prestation', label:'Prestation', key:'prestation'},
+    {id:'ex-premiere', label:'1ère visite', key:'premiere'},
+    {id:'ex-derniere', label:'Dernière visite', key:'derniere'},
+    {id:'ex-nb', label:'Nb séjours', key:'nb_sejours'},
+    {id:'ex-newsletter', label:'Newsletter', key:'newsletter'},
+    {id:'ex-source', label:'Source', key:'source'},
+    {id:'ex-statut', label:'Statut', key:'statut'},
+    {id:'ex-commentaire', label:'Commentaire', key:'commentaire'}
+  ].filter(c => document.getElementById(c.id).checked);
+
+  if (colonnes.length === 0) { alert('Sélectionnez au moins une colonne.'); return; }
+
   const q = document.getElementById('search').value.toLowerCase();
   const type = document.getElementById('filtre-type').value;
   const statut = document.getElementById('filtre-statut').value;
@@ -449,13 +572,10 @@ function exporterExcel() {
     return (!q||txt.includes(q))&&(!type||c.type===type)&&(!statut||c.statut===statut);
   });
 
-  const entetes = ['ID','Nom','Prénom','Email','Téléphone','Adresse','Code postal','Ville','Pays','Type','Prestation','1ère visite','Dernière visite','Nb séjours','Commentaire','Newsletter','Source','Statut'];
-  const lignes = liste.map(c => [c.id,c.nom,c.prenom,c.email,c.tel,c.adresse,c.cp,c.ville,c.pays,c.type,c.prestation,c.premiere,c.derniere,c.nb_sejours,c.commentaire,c.newsletter,c.source,c.statut]);
-
-  let csv = '﻿'; // BOM pour Excel
-  csv += entetes.join(';') + '\n';
-  lignes.forEach(l => {
-    csv += l.map(v => '"'+(v||'').toString().replace(/"/g,'""')+'"').join(';') + '\n';
+  let csv = '﻿';
+  csv += colonnes.map(c => c.label).join(';') + '\n';
+  liste.forEach(client => {
+    csv += colonnes.map(c => '"'+(client[c.key]||'').toString().replace(/"/g,'""')+'"').join(';') + '\n';
   });
 
   const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
@@ -466,6 +586,7 @@ function exporterExcel() {
   a.download = 'clients-chemins-de-traverse-'+date+'.csv';
   a.click();
   URL.revokeObjectURL(url);
+  document.getElementById('overlay-export').classList.remove('open');
   toast('Export téléchargé !');
 }
 
